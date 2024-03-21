@@ -4,12 +4,15 @@ import com.insta.instagram.dto.UserDto;
 import com.insta.instagram.exception.UserException;
 import com.insta.instagram.model.User;
 import com.insta.instagram.repository.UserRepository;
+import com.insta.instagram.security.JwtTokenClaims;
+import com.insta.instagram.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -19,6 +22,9 @@ public class UserServiceImpl implements UserService{
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @Override
     public User registerUser(User user) throws UserException {
@@ -56,8 +62,14 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User findUserProfile(String token) throws UserException {
-
-        return null;
+        token = token.substring(7);
+        JwtTokenClaims jwtTokenClaims = jwtTokenProvider.getClaimsFromToken(token);
+        String email = jwtTokenClaims.getUsername();
+        Optional<User> opt = userRepository.findByEmail(email);
+        if (opt.isPresent()){
+            return opt.get();
+        }
+        throw new UserException("invalid token...");
     }
 
     @Override
@@ -168,5 +180,12 @@ public class UserServiceImpl implements UserService{
             return userRepository.save(existingUser);
         }
         throw new UserException("You can't update this user");
+    }
+
+    @Override
+    public List<UserDto> getTop5PopularUser() {
+        return (List<UserDto>) userRepository.findAll().stream().sorted((u1, u2) -> u2.getFollower().size() - u1.getFollower().size())
+                .map(user -> new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getName(), user.getImage()))
+                .limit(5).collect(Collectors.toList());
     }
 }

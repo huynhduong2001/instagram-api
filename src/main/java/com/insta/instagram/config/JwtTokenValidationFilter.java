@@ -42,8 +42,4 @@ public class JwtTokenValidationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request,response);
     }
 
-
-    protected boolean shouldNotFilter(HttpServletRequest req) throws ServletException{
-        return !req.getServletPath().equals("/signin");
-    }
 }

@@ -1,5 +1,6 @@
 package com.insta.instagram.service;
 
+import com.insta.instagram.dto.UserDto;
 import com.insta.instagram.exception.UserException;
 import com.insta.instagram.model.User;
 
@@ -15,6 +16,6 @@ public interface UserService{
     public List<User> findUserByIds(List<Integer> userIds) throws UserException;
     public List<User> searchUser(String query) throws UserException;
     public User updateUserDetails(User updatedUser, User existingUser) throws UserException;
-
+    public List<UserDto> getTop5PopularUser();
 
 }

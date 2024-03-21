@@ -1,5 +1,6 @@
 package com.insta.instagram.controller;
 
+import com.insta.instagram.dto.UserDto;
 import com.insta.instagram.exception.UserException;
 import com.insta.instagram.model.User;
 import com.insta.instagram.response.MessageResponse;
@@ -31,21 +32,25 @@ public class UserController {
     }
 
     @PutMapping("/follow/{followUserId}")
-    public ResponseEntity<MessageResponse> followUserHandler(@PathVariable Integer followUserId){
-//        MessageResponse res = userService.followUser()
-        return null;
+    public ResponseEntity<MessageResponse> followUserHandler(@PathVariable Integer followUserId, @RequestHeader("Authorization") String token) throws UserException {
+        User user = userService.findUserProfile(token);
+        String message = userService.followUser(user.getId(),followUserId);
+        MessageResponse res = new MessageResponse(message);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    @PutMapping("/unfollow/{followUserId}")
-    public ResponseEntity<MessageResponse> unfollowUserHandler(@PathVariable Integer followUserId){
-//        MessageResponse res = userService.followUser()
-        return null;
+    @PutMapping("/unfollow/{unfollowUserId}")
+    public ResponseEntity<MessageResponse> unfollowUserHandler(@PathVariable Integer unfollowUserId, @RequestHeader("Authorization") String token) throws UserException {
+        User user = userService.findUserProfile(token);
+        String message = userService.unfollowUser(user.getId(),unfollowUserId);
+        MessageResponse res = new MessageResponse(message);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @GetMapping("/req")
-    public ResponseEntity<MessageResponse> findUserProfileHandler(@RequestHeader("Authorization") String token){
-
-        return null;
+    public ResponseEntity<User> findUserProfileHandler(@RequestHeader("Authorization") String token) throws UserException {
+        User user = userService.findUserProfile(token);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping("/m/{userIds}")
@@ -60,8 +65,16 @@ public class UserController {
         return new ResponseEntity<List<User>>(users, HttpStatus.OK);
     }
 
+    @PutMapping("/account/edit")
     public ResponseEntity<User> updateUserHandler(@RequestHeader("Authorization") String token, @RequestBody User user) throws UserException {
-//        User updatedUser = userService.updateUserDetails(user, user);
-        return null;
+        User reqUser = userService.findUserProfile(token);
+        User updatedUser = userService.updateUserDetails(user, reqUser);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<UserDto>> getTop5PopularUser(){
+        List<UserDto> userDto = userService.getTop5PopularUser();
+        return new ResponseEntity<>(userDto,HttpStatus.OK);
     }
 }
